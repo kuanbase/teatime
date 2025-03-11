@@ -1,147 +1,157 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TeaTime.DataAccess.UnitOfWork;
 using TeaTime.Models;
-using TeaTime.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore.Update.Internal;
+using Microsoft.EntityFrameworkCore;
 
-namespace TeaTime.Areas.Admin.Controllers
+namespace TeaTime.Areas.Admin.Controllers;
+
+[Area("Admin")]
+public class ProductController : Controller
 {
-    [Area("Admin")]
-    public class ProductController : Controller
+    private readonly IWebHostEnvironment _webHostEnvironment;
+
+    private readonly IUnitOfWork _unitOfWork;
+
+    public List<Product>? ViewProducts;
+
+    public ProductController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
     {
-        private readonly IUnitOfWork _unitOfWork;
+        _unitOfWork = unitOfWork;
+        _webHostEnvironment = webHostEnvironment;
+        ViewProducts = GetViewProduct();
+    }
 
-        public ProductController(IUnitOfWork unitOfWork)
+    public IActionResult Index()
+    {
+        return View(ViewProducts);
+    }
+
+    public IActionResult Create()
+    {
+        ViewBag.CategoryList = GetSelectListItemGategories();
+        return View();
+    }
+
+    [HttpPost]
+    public IActionResult Create(Product product)
+    {
+
+        if (!ModelState.IsValid)
         {
-            _unitOfWork = unitOfWork;
+            View(product);
         }
 
-        public IActionResult Index()
+        _unitOfWork.Product.Add(product);
+
+        _unitOfWork.Save();
+
+        TempData["success"] = "添加成功!";
+
+        return RedirectToAction("Index");
+    }
+
+    public IActionResult Edit(int? id)
+    {
+        if (id == null || id == 0)
         {
-            List<Product> products = _unitOfWork.Product.GetAll().ToList();
-            List<ProductVM> productVMs = new();
-
-            var CategoryList = _unitOfWork.Category.GetAll().Select(u => new SelectListItem
-            {
-                Text = u.Name,
-                Value = u.Id.ToString()
-            });
-
-            foreach (var product in products)
-            {
-                ProductVM productVM = new ProductVM
-                {
-                    Product = product,
-                    CategoryList = CategoryList,
-                };
-
-                productVMs.Add(productVM);
-            }
-
-            return View(productVMs);
+            return NotFound();
         }
 
-        public IActionResult Create()
+        Product? obj = _unitOfWork.Product.Get(x => x.Id == id);
+        if (obj == null)
         {
-            ProductVM product = new()
-            {
-                CategoryList = _unitOfWork.Category.GetAll().Select(u => new SelectListItem
-                {
-                    Text = u.Name,
-                    Value = u.Id.ToString()
-                })
-            };
+            return NotFound();
+        }
 
+        ViewBag.CategoryList = GetSelectListItemGategories();
+
+        return View(obj);
+    }
+
+    [HttpPost]
+    public IActionResult Edit(Product product)
+    {
+        if (!ModelState.IsValid)
+        {
             return View(product);
         }
 
-        [HttpPost]
-        public IActionResult Create(Product product)
+        _unitOfWork.Product.Update(product);
+        _unitOfWork.Save();
+
+        return RedirectToAction("Index");
+    }
+
+    public IActionResult Delete(int? id)
+    {
+        if (id == null || id == 0)
         {
-
-            if (!ModelState.IsValid)
-            {
-                return View(product);
-            }
-
-            _unitOfWork.Product.Add(product);
-
-            _unitOfWork.Save();
-
-            TempData["success"] = "添加成功!";
-
-            return RedirectToAction("Index");
+            return NotFound();
         }
 
-        public IActionResult Edit(int? id)
+        Product? obj = _unitOfWork.Product.Get(x => x.Id == id);
+        if (obj == null)
         {
-            if (id == null || id == 0)
-            {
-                return NotFound();
-            }
-
-            Product? obj = _unitOfWork.Product.Get(x => x.Id == id);
-            if (obj == null)
-            {
-                return NotFound();
-            }
-
-            ProductVM productVM = new ProductVM
-            {
-                Product = obj,
-                CategoryList = _unitOfWork.Category.GetAll().Select(u => new SelectListItem
-                {
-                    Text = u.Name,
-                    Value = u.ToString(),
-                })
-            };
-
-            return View(productVM);
+            return NotFound();
         }
 
-        [HttpPost]
-        public IActionResult Edit(Product product)
+        return View(obj);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    public IActionResult DeletePost(int? id)
+    {
+        Product? obj = _unitOfWork.Product.Get(x => x.Id == id);
+        if (obj == null)
         {
-            if (!ModelState.IsValid)
-            {
-                return View();
-            }
-
-            _unitOfWork.Product.Update(product);
-            _unitOfWork.Save();
-
-            return RedirectToAction("Index");
+            return NotFound();
         }
 
-        public IActionResult Delete(int? id)
+        _unitOfWork.Product.Remove(obj);
+        _unitOfWork.Save();
+
+        return RedirectToAction("Index");
+    }
+
+    public IEnumerable<SelectListItem> GetSelectListItemGategories()
+    {
+        var list = _unitOfWork.Category.GetAll().Select(u => new SelectListItem
         {
-            if (id == null || id == 0)
-            {
-                return NotFound();
-            }
+            Text = u.Name,
+            Value = u.Id.ToString(),
+        });
 
-            Product? obj = _unitOfWork.Product.Get(x => x.Id == id);
-            if (obj == null)
-            {
-                return NotFound();
-            }
+        return list;
+    }
 
-            return View(obj);
-        }
+    public List<Product> GetViewProduct()
+    {
+        List<Product> products = _unitOfWork.Product.GetAll().ToList();
+        List<Category> categories = _unitOfWork.Category.GetAll().ToList();
 
-        [HttpPost, ActionName("Delete")]
-        public IActionResult DeletePost(int? id)
+        var query = _unitOfWork.Category.GetAll();
+
+        products.ForEach(product =>
         {
-            Product? obj = _unitOfWork.Product.Get(x => x.Id == id);
-            if (obj == null)
+            int categoryId = product.CategoryId;
+            var category = query.FirstOrDefault(category => category.Id == categoryId);
+
+            if (category != null)
             {
-                return NotFound();
+                product.CategoryName = category.Name;
+            } else
+            {
+                product.CategoryName = "未分類";
             }
+        });
 
-            _unitOfWork.Product.Remove(obj);
-            _unitOfWork.Save();
+        return products;
+    }
 
-            return RedirectToAction("Index");
-        }
+    private void UpdateViewProducts()
+    {
+        ViewProducts = GetViewProduct();
     }
 }

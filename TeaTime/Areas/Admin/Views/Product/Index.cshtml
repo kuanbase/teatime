@@ -1,4 +1,5 @@
-﻿@model List<ProductVM>
+﻿@using TeaTime.DataAccess;
+@model List<Product>
 
 <div class="container">
     <partial name="_Notification" />
@@ -36,16 +37,14 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var modelVM in Model)
+            @foreach (var obj in Model)
             {
-                Product obj = modelVM.Product!;
-
                 <tr>
                     <td>
                         @obj.Name
                     </td>
                     <td>
-                        @modelVM.CategoryList!.ToArray()[@obj.CategoryId].Text
+                        @obj.CategoryName
                     </td>
                     <td>
                         @obj.Size

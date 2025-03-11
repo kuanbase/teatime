@@ -1,5 +1,6 @@
 ﻿using TeaTime.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Drawing;
 
 namespace TeaTime.DataAccess.Data
 {
@@ -9,6 +10,8 @@ namespace TeaTime.DataAccess.Data
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
+
+        //public DbSet<Size> Sizes { get; set }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

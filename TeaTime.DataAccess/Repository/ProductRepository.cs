@@ -1,4 +1,5 @@
-﻿using TeaTime.DataAccess.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using TeaTime.DataAccess.Data;
 using TeaTime.Models;
 
 namespace TeaTime.DataAccess.Repository

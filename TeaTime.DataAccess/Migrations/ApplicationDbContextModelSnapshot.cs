@@ -94,8 +94,6 @@ namespace TeaTime.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
                     b.ToTable("Products");
 
                     b.HasData(
@@ -129,17 +127,6 @@ namespace TeaTime.DataAccess.Migrations
                             Price = 50.0,
                             Size = "中杯"
                         });
-                });
-
-            modelBuilder.Entity("TeaTime.Models.Product", b =>
-                {
-                    b.HasOne("TeaTime.Models.Category", "category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("category");
                 });
 #pragma warning restore 612, 618
         }
