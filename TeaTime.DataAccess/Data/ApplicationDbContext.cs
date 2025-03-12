@@ -1,20 +1,22 @@
 ﻿using TeaTime.Models;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Drawing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace TeaTime.DataAccess.Data
 {
-    public class ApplicationDbContext: DbContext
+    public class ApplicationDbContext: IdentityDbContext<IdentityUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
 
-        //public DbSet<Size> Sizes { get; set }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<Category>().HasData(
                 new Category { Id = 1, Name = "茶飲", DisplayOrder = 1 },
                 new Category { Id = 2, Name = "水果茶", DisplayOrder = 2 },

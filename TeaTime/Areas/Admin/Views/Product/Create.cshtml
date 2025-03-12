@@ -1,57 +1,86 @@
 ﻿@model Product
+@using TeaTime.Utility;
+@{
+    var global = new Global();
+}
 
-<form method="post">
-    <div class="border p-3 mt-4">
-        <div class="row pb-2">
-            <h2 class="text-primary">新增類別</h2>
-            <hr />
-        </div>
-        <div class="mb-3 row p-1">
-            <label asp-for="Name" class="p-0"></label>
-            <input asp-for="Name" class="form-control" />
-            <span asp-validation-for="Name" class="text-danger"></span>
-        </div>
-        <div class="mb-3 row p-1">
-            <label asp-for="CategoryId" class="p-0"></label>
-            <select asp-for="CategoryId" asp-items="ViewBag.CategoryList">
-                <option disabled selected>選擇類別</option>
-            </select>
-            <span asp-validation-for="CategoryId" class="text-danger"></span>
-        </div>
-        <div class="mb-3 row p-1">
-            <label asp-for="Size" class="p-0"></label>
-            <input asp-for="Size" class="form-control" />
-            <span asp-validation-for="Size" class="text-danger"></span>
-        </div>
-        <div class="mb-3 row p-1">
-            <label asp-for="Price" class="p-0"></label>
-            <input asp-for="Price" class="form-control" />
-            <span asp-validation-for="Price" class="text-danger"></span>
-        </div>
-        <div class="mb-3 row p-1">
-            <label asp-for="Description" class="p-0"></label>
-            <input asp-for="Description" class="form-control" />
-            <span asp-validation-for="Description" class="text-danger"></span>
-        </div>
-        <div class="mb-3 row p-1">
-            <label asp-for="ImageUrl" class="p-0"></label>
-            <input type="file" asp-for="ImageUrl" class="form-control" />
-        </div>
-        <div class="row">
-            <div class="col-6 col-md-3">
-                <button type="submit" class="btn btn-primary form-control">新增</button>
+<form method="post" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-10">
+            <div class="border p-3 mt-4">
+                <div class="row pb-2">
+                    <h2 class="text-primary">新增產品</h2>
+                    <hr />
+                </div>
+                <div class="mb-3 row p-1">
+                    <label asp-for="Name" class="p-0"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="mb-3 row p-1">
+                    <label asp-for="CategoryId" class="p-0"></label>
+                    <select asp-for="CategoryId" asp-items="ViewBag.CategoryList" class="form-select">
+                        <option disabled selected>選擇類別</option>
+                    </select>
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                </div>
+                <div class="mb-3 row p-1">
+                    <label asp-for="Size" class="p-0"></label>
+                    <select asp-for="Size" asp-items="@global.Sizes" class="form-select">
+                        <option disabled selected>選擇大小</option>
+                    </select>
+                    <span asp-validation-for="Size" class="text-danger"></span>
+                </div>
+                <div class="mb-3 row p-1">
+                    <label asp-for="Price" class="p-0"></label>
+                    <input asp-for="Price" class="form-control" />
+                    <span asp-validation-for="Price" class="text-danger"></span>
+                </div>
+                <div class="mb-3 row p-1">
+                    <label asp-for="Description" class="p-0"></label>
+                    <input asp-for="Description" class="form-control" />
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+                <div class="mb-3 row p-1">
+                    <label asp-for="ImageUrl" class="p-0"></label>
+                    <input type="file" id="imageInput" name="file" asp-for="ImageUrl" class="form-control" accept="image/*" />
+                    <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                </div>
+                <div class="row">
+                    <div class="col-6 col-md-3">
+                        <button type="submit" class="btn btn-primary form-control">新增</button>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="Product" asp-action="Index" class="btn btn-secondary border form-control">
+                            返回
+                        </a>
+                    </div>
+                </div>
             </div>
-            <div class="col-6 col-md-3">
-                <a asp-controller="Product" asp-action="Index" class="btn btn-secondary border form-control">
-                    返回
-                </a>
-            </div>
+        </div>
+        <div class="col-2">
+            <img id="imagePreview" class="mt-4" width="100%" style="border-radius:5px; border:1px solid #bbb9b9; display:none;" />
         </div>
     </div>
 </form>
+
+<script>
+    document.getElementById('imageInput').addEventListener('change', function(event) {
+        const file = event.target.files[0];  // 获取文件对象
+        if (file) {
+            const reader = new FileReader();  // 创建FileReader对象
+            reader.onload = function(e) {
+                const imagePreview = document.getElementById('imagePreview');  // 获取图片元素
+                imagePreview.src = e.target.result;  // 设置图片源
+                imagePreview.style.display = 'block';  // 显示图片
+            };
+            reader.readAsDataURL(file);  // 读取图片文件内容并转化为Data URL
+        }
+    });
+</script>
 
 @section Scripts {
     @{
         <partial name="_ValidationScriptsPartial" />
     }
-}
+}  

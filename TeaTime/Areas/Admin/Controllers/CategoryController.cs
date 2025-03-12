@@ -46,7 +46,7 @@ namespace TeaTime.Areas.Admin.Controllers
 
             _unitOfWork.Save();
 
-            TempData["success"] = "添加成功!";
+            TempData["success"] = "類別添加成功!";
 
             return RedirectToAction("Index");
         }
@@ -55,13 +55,15 @@ namespace TeaTime.Areas.Admin.Controllers
         {
             if (id == null || id == 0)
             {
-                return NotFound();
+                TempData["error"] = "不存在該類別";
+                return RedirectToAction("Index");
             }
 
             Category? catrgoryFromDb = _unitOfWork.Category.Get(x => x.Id == id);
             if (catrgoryFromDb == null)
             {
-                return NotFound();
+                TempData["error"] = "不存在該類別";
+                return RedirectToAction("Index");
             }
 
             return View(catrgoryFromDb);
@@ -78,6 +80,8 @@ namespace TeaTime.Areas.Admin.Controllers
             _unitOfWork.Category.Update(category);
             _unitOfWork.Save();
 
+            TempData["success"] = "類別修改成功";
+
             return RedirectToAction("Index");
         }
 
@@ -85,13 +89,15 @@ namespace TeaTime.Areas.Admin.Controllers
         {
             if (id == null || id == 0)
             {
-                return NotFound();
+                TempData["error"] = "不存在該類別";
+                return RedirectToAction("Index");
             }
 
             Category? categoryFromDb = _unitOfWork.Category.Get(x => x.Id == id);
             if (categoryFromDb == null)
             {
-                return NotFound();
+                TempData["error"] = "不存在該類別";
+                return RedirectToAction("Index");
             }
 
             return View(categoryFromDb);
@@ -103,12 +109,24 @@ namespace TeaTime.Areas.Admin.Controllers
             Category? categoryFromDb = _unitOfWork.Category.Get(x => x.Id == id);
             if (categoryFromDb == null)
             {
-                return NotFound();
+                TempData["error"] = "不存在該類別";
+                return RedirectToAction("Index");
+            }
+
+            IQueryable<Product> query = _unitOfWork.Product.GetAll().AsQueryable();
+
+            var product = query.FirstOrDefault(x => x.CategoryId == id);
+
+            if (product != null)
+            {
+                TempData["error"] = "刪除失敗，仍有產品引用該類別";
+                return RedirectToAction("Index");
             }
 
             _unitOfWork.Category.Remove(categoryFromDb);
             _unitOfWork.Save();
 
+            TempData["success"] = "類別刪除成功！";
             return RedirectToAction("Index");
         }
     }

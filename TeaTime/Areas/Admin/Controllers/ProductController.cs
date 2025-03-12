@@ -4,6 +4,7 @@ using TeaTime.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore.Update.Internal;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Azure.Amqp.Framing;
 
 namespace TeaTime.Areas.Admin.Controllers;
 
@@ -35,19 +36,33 @@ public class ProductController : Controller
     }
 
     [HttpPost]
-    public IActionResult Create(Product product)
+    public IActionResult Create(Product product, IFormFile? file)
     {
-
         if (!ModelState.IsValid)
         {
             View(product);
+        }
+
+        string wwwRootPath = _webHostEnvironment.WebRootPath;
+        
+        if (file != null)
+        {
+            string filename = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            string productPath = Path.Combine(wwwRootPath, @"images\product");
+            
+            using (var fileStream = new FileStream(Path.Combine(productPath, filename), FileMode.Create))
+            {
+                file.CopyTo(fileStream);
+            }
+
+            product.ImageUrl = @"\images\product\" + filename;
         }
 
         _unitOfWork.Product.Add(product);
 
         _unitOfWork.Save();
 
-        TempData["success"] = "添加成功!";
+        TempData["success"] = "產品添加成功!";
 
         return RedirectToAction("Index");
     }
@@ -56,13 +71,15 @@ public class ProductController : Controller
     {
         if (id == null || id == 0)
         {
-            return NotFound();
+            TempData["error"] = "不存在該產品";
+            return RedirectToAction("Index");
         }
 
         Product? obj = _unitOfWork.Product.Get(x => x.Id == id);
         if (obj == null)
         {
-            return NotFound();
+            TempData["error"] = "不存在該產品";
+            return RedirectToAction("Index");
         }
 
         ViewBag.CategoryList = GetSelectListItemGategories();
@@ -71,15 +88,41 @@ public class ProductController : Controller
     }
 
     [HttpPost]
-    public IActionResult Edit(Product product)
+    public IActionResult Edit(Product product, IFormFile? file)
     {
         if (!ModelState.IsValid)
         {
             return View(product);
         }
 
+        string wwwRootPath = _webHostEnvironment.WebRootPath;
+
+        if (file != null)
+        {
+            string filename = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            string productPath = Path.Combine(wwwRootPath, @"images\product");
+
+            if (!string.IsNullOrEmpty(product.ImageUrl))
+            {
+                var oldImagePath = Path.Combine(wwwRootPath, product.ImageUrl.Trim('\\'));
+                if (System.IO.File.Exists(oldImagePath))
+                {
+                    System.IO.File.Delete(oldImagePath);
+                }
+            }
+
+            using (var fileStream = new FileStream(Path.Combine(productPath, filename), FileMode.Create))
+            {
+                file.CopyTo(fileStream);
+            }
+
+            product.ImageUrl = @"\images\product\" + filename;
+        }
+
         _unitOfWork.Product.Update(product);
         _unitOfWork.Save();
+
+        TempData["success"] = "產品修改成功";
 
         return RedirectToAction("Index");
     }
@@ -88,13 +131,15 @@ public class ProductController : Controller
     {
         if (id == null || id == 0)
         {
-            return NotFound();
+            TempData["error"] = "不存在該產品";
+            return RedirectToAction("Index");
         }
 
         Product? obj = _unitOfWork.Product.Get(x => x.Id == id);
         if (obj == null)
         {
-            return NotFound();
+            TempData["error"] = "不存在該產品";
+            return RedirectToAction("Index");
         }
 
         return View(obj);
@@ -106,14 +151,26 @@ public class ProductController : Controller
         Product? obj = _unitOfWork.Product.Get(x => x.Id == id);
         if (obj == null)
         {
-            return NotFound();
+            TempData["error"] = "不存在該產品";
+            return RedirectToAction("Index");
         }
 
         _unitOfWork.Product.Remove(obj);
         _unitOfWork.Save();
 
+        TempData["success"] = "刪除產品成功";
+
         return RedirectToAction("Index");
     }
+
+    #region API CALLS
+    [HttpGet]
+    public IActionResult GetAll()
+    {
+        List<Product> objProductList = _unitOfWork.Product.GetAll().AsQueryable().Include(p => p.Category).ToList();
+        return Json(new { data = objProductList});
+    }
+    #endregion
 
     public IEnumerable<SelectListItem> GetSelectListItemGategories()
     {

@@ -2,6 +2,8 @@ using TeaTime.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using TeaTime.DataAccess.Repository;
 using TeaTime.DataAccess.UnitOfWork;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>
+    (options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddRazorPages();
 
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
@@ -32,6 +40,9 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+app.UseAuthorization();
+
+app.MapRazorPages();
 
 app.MapControllerRoute(
     name: "default",
