@@ -4,6 +4,8 @@ using TeaTime.DataAccess.Repository;
 using TeaTime.DataAccess.UnitOfWork;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using TeaTime.Utility;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +25,8 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>
 builder.Services.AddRazorPages();
 
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 var app = builder.Build();
 
