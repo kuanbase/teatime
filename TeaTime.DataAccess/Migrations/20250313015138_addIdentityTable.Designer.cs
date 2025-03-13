@@ -12,7 +12,7 @@ using TeaTime.DataAccess.Data;
 namespace TeaTime.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250312083602_addIdentityTable")]
+    [Migration("20250313015138_addIdentityTable")]
     partial class addIdentityTable
     {
         /// <inheritdoc />

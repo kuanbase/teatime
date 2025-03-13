@@ -12,6 +12,9 @@ namespace TeaTime.DataAccess.UnitOfWork
     {
         public ICategoryRepository Category { get; private set; }
         public IProductRepository Product { get; private set; }
+
+        public IShoppingCartRepository ShoppingCart { get; private set; }
+
         public ApplicationDbContext _context;
 
         public UnitOfWork(ApplicationDbContext context) 
@@ -19,6 +22,7 @@ namespace TeaTime.DataAccess.UnitOfWork
             _context = context;
             Category = new CategoryRepository(_context);
             Product = new ProdcutRepository(_context);
+            ShoppingCart = new ShoppingCartRepository(_context);
         }
         public void Save()
         {

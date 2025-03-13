@@ -1,6 +1,7 @@
 ﻿@model IEnumerable<Product>
 
 <div class="row pb-3">
+    <partial name="_Notification" />
     @foreach(var product in Model)
     {
         <div class="col-lg-3 col-sm-6">

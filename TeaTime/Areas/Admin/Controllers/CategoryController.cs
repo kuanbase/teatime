@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TeaTime.DataAccess.Data;
 using TeaTime.DataAccess.Repository;
 using TeaTime.DataAccess.UnitOfWork;
 using TeaTime.Models;
+using TeaTime.Utility;
 
 namespace TeaTime.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = SD.Role_Admin)]
     public class CategoryController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;

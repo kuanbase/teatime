@@ -11,6 +11,8 @@ namespace TeaTime.DataAccess.UnitOfWork
     {
         ICategoryRepository Category { get; }
         IProductRepository Product { get; }
+
+        IShoppingCartRepository ShoppingCart { get; }
         void Save();
     }
 }

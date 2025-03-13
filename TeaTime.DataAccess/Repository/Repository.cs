@@ -25,10 +25,17 @@ namespace TeaTime.DataAccess.Repository
         }
 
         public T Get(Expression<Func<T, bool>> filter)
-        {
+        { 
             IQueryable<T> query = dbSet;
             query = query.Where(filter);
             return query.FirstOrDefault()!;
+        }
+
+        public List<T> GetList(Expression<Func<T, bool>> filter)
+        {
+            IQueryable<T> query = dbSet;
+            query = query.Where(filter);
+            return query.ToList();
         }
 
         public IEnumerable<T> GetAll()

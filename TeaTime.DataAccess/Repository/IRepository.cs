@@ -11,8 +11,10 @@ namespace TeaTime.DataAccess.Repository
     {
         IEnumerable<T> GetAll();
         T Get(Expression<Func<T, bool>> filter);
+        List<T> GetList(Expression<Func<T, bool>> filter);
         void Add(T entity);
         void Remove(T entity);
         void RemoveRange(IEnumerable<T> entities);
+    //    IQueryable<T> Query { get; }
     }
 }

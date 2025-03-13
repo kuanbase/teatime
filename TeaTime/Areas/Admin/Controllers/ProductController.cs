@@ -5,10 +5,13 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore.Update.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Azure.Amqp.Framing;
+using Microsoft.AspNetCore.Authorization;
+using TeaTime.Utility;
 
 namespace TeaTime.Areas.Admin.Controllers;
 
 [Area("Admin")]
+[Authorize(Roles = SD.Role_Admin)]
 public class ProductController : Controller
 {
     private readonly IWebHostEnvironment _webHostEnvironment;

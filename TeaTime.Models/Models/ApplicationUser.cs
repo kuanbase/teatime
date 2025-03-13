@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace TeaTime.Models.Models
 {
-    internal class ApplicationUser: IdentityUser
+    public class ApplicationUser: IdentityUser
     {
-        //[Required]
-        //public 
+        
     }
 }

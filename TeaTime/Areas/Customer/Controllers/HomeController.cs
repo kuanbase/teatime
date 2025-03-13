@@ -1,8 +1,11 @@
 using System.Diagnostics;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TeaTime.DataAccess.UnitOfWork;
 using TeaTime.Models;
+using TeaTime.Models.Models;
 
 namespace TeaTime.Areas.Customer.Controllers
 {
@@ -27,8 +30,56 @@ namespace TeaTime.Areas.Customer.Controllers
 
         public IActionResult Details(int productId)
         {
-            Product product = _unitOfWork.Product.Get(u => u.Id == productId);
-            return View(product);
+            ShoppingCart cart = new ShoppingCart()
+            {
+                Product = _unitOfWork.Product.Get(u => u.Id == productId),
+                Count = 1,
+                ProductId = productId,
+            };
+            
+            return View(cart);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public IActionResult Details(ShoppingCart shoppingCart)
+        {
+            var claimsIdentity = User.Identity as ClaimsIdentity;
+
+            if (claimsIdentity is null)
+            {
+                return NotFound();
+            }
+
+            string userId = claimsIdentity!.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
+            shoppingCart.ApplicationUserId = userId;
+
+            var cartFromDb = _unitOfWork.ShoppingCart.Get(u =>
+            u.Ice == shoppingCart.Ice
+            && u.ApplicationUserId == shoppingCart.ApplicationUserId
+            && u.Sweetness == shoppingCart.Sweetness);
+
+            // var cartFromDb = _unitOfWork.ShoppingCart.Get(u => u == shoppingCart);
+
+            //var cartFromDb = _unitOfWork.ShoppingCart.Get(u => u.Equals(shoppingCart));
+
+            if (cartFromDb is null)
+            {
+                _unitOfWork.ShoppingCart.Add(shoppingCart);
+            } 
+            else
+            {
+                cartFromDb.Count += shoppingCart.Count;
+                _unitOfWork.ShoppingCart.Update(cartFromDb);
+            }
+
+            //_unitOfWork.ShoppingCart.Add(shoppingCart);
+            _unitOfWork.Save();
+
+            TempData["success"] = "加入購物車成功！";
+
+            return RedirectToAction(nameof(Index));
         }
 
         public IActionResult Privacy()
