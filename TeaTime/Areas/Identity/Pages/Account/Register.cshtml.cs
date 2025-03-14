@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -95,6 +96,17 @@ namespace TeaTime.Areas.Identity.Pages.Account
             [Display(Name = "Password")]
             public string Password { get; set; }
 
+            // 添加 Username 属性
+            [Required]
+            [Display(Name = "Username")]
+            public string UserName { get; set; }
+
+            // 添加 PhoneNumber 属性
+            [Required]
+            [Phone]
+            [Display(Name = "Phone Number")]
+            public string PhoneNumber { get; set; }
+
             public string? Role { get; set; }
             
             [ValidateNever]
@@ -142,7 +154,15 @@ namespace TeaTime.Areas.Identity.Pages.Account
             {
                 var user = CreateUser();
 
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+                // 设置用户名
+                await _userStore.SetUserNameAsync(user, Input.UserName, CancellationToken.None);
+                // 设置邮箱
+                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+                // 设置电话号码
+                user.PhoneNumber = Input.PhoneNumber;
+                //user.UserName = Input.UserName;
+
+                //await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
                 var result = await _userManager.CreateAsync(user, Input.Password);
 

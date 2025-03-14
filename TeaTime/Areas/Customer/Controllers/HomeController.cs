@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TeaTime.DataAccess.UnitOfWork;
 using TeaTime.Models;
-using TeaTime.Models.Models;
 
 namespace TeaTime.Areas.Customer.Controllers
 {
@@ -58,12 +57,14 @@ namespace TeaTime.Areas.Customer.Controllers
             var cartFromDb = _unitOfWork.ShoppingCart.Get(u =>
             u.Ice == shoppingCart.Ice
             && u.ApplicationUserId == shoppingCart.ApplicationUserId
-            && u.Sweetness == shoppingCart.Sweetness);
+            && u.Sweetness == shoppingCart.Sweetness
+            && u.Product!.Id == shoppingCart.ProductId
+            );
 
-            // var cartFromDb = _unitOfWork.ShoppingCart.Get(u => u == shoppingCart);
+            //var cartFromDb = _unitOfWork.ShoppingCart.Get(u => u == shoppingCart);
 
             //var cartFromDb = _unitOfWork.ShoppingCart.Get(u => u.Equals(shoppingCart));
-
+            //var list = _unitOfWork.ShoppingCart.dbSet.Where(u => u.Equals(shoppingCart)).FirstOrDefault();
             if (cartFromDb is null)
             {
                 _unitOfWork.ShoppingCart.Add(shoppingCart);

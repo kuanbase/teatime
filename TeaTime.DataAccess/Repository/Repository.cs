@@ -12,7 +12,7 @@ namespace TeaTime.DataAccess.Repository
     public class Repository<T>: IRepository<T> where T : class
     {
         private readonly ApplicationDbContext _context;
-        public DbSet<T> dbSet;
+        public DbSet<T> dbSet { get; set; }
 
         public Repository(ApplicationDbContext context) 
         {
@@ -31,16 +31,23 @@ namespace TeaTime.DataAccess.Repository
             return query.FirstOrDefault()!;
         }
 
-        public List<T> GetList(Expression<Func<T, bool>> filter)
+        public IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter = null, string? includeProperties = null)
         {
             IQueryable<T> query = dbSet;
-            query = query.Where(filter);
-            return query.ToList();
-        }
 
-        public IEnumerable<T> GetAll()
-        {
-            IQueryable<T> query = dbSet;
+            if (filter != null)
+            {
+                query = query.Where(filter);
+
+                if (!string.IsNullOrEmpty(includeProperties))
+                {
+                    foreach (var property in includeProperties)
+                    {
+                        query = query.Include(includeProperties);
+                    }
+                }
+            }
+
             return query.ToList();
         }
 
